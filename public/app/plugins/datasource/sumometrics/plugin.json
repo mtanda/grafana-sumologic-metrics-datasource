@@ -1,0 +1,17 @@
+{
+  "pluginType": "datasource",
+  "name": "Sumo Metrics",
+
+  "type": "sumometrics",
+  "serviceName": "SumoMetricsDatasource",
+
+  "module": "app/plugins/datasource/sumometrics/datasource",
+
+  "partials": {
+    "config": "app/plugins/datasource/sumometrics/partials/config.html"
+  },
+
+  "defaultMatchFormat": "glob",
+  "metrics": true,
+  "annotations": false
+}
