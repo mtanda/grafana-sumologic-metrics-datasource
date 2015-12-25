@@ -8,7 +8,7 @@ define([
 
     var module = angular.module('grafana.services');
 
-    module.factory('SumoMetricsDatasource', function ($q, backendSrv, templateSrv) {
+    module.factory('SumoMetricsDatasource', function ($q, backendSrv) {
 
       function SumoMetricsDatasource(datasource) {
         this.url = datasource.url;
@@ -62,9 +62,8 @@ define([
               var response = responses[i];
               var rowId = response.rowId;
               console.log("SumoMetricsDatasource.query - rowId: " + rowId);
-              var results = response.results;
-              for (var j = 0; j < results.length; j++) {
-                var result = results[j];
+              for (var j = 0; j < response.results.length; j++) {
+                var result = response.results[j];
                 console.log("SumoMetricsDatasource.query - metric: " + JSON.stringify(result.metric));
 
                 // Synthesize the "target" - the "metric name" basically.
@@ -73,28 +72,26 @@ define([
                 for (var k = 0; k < dimensions.length; k++) {
                   var dimension = dimensions[k];
                   target += dimension.key + "=" + dimension.value;
-                  if (k != dimensions.length - 1) {
+                  if (k !== dimensions.length - 1) {
                     target += ",";
                   }
                 }
 
                 // Create Grafana-suitable datapoints.
                 var values = result.datapoints.values;
-                var datapoints = []
-                for (var k = 0; k < values.length; k++) {
-                  var value = values[k];
+                var datapoints = [];
+                for (var l = 0; l < values.length; l++) {
+                  var value = values[l];
                   var timestamp = parseFloat(value[0]);
-                  var value = value[1];
-                  datapoints.push([value, timestamp]);
+                  var metricValue = value[1];
+                  datapoints.push([metricValue, timestamp]);
                 }
 
                 // Add the series.
                 seriesList.push({target: target, datapoints: datapoints});
               }
             }
-            var transformedResult = {data: seriesList};
-            //console.log("SumoMetricsDatasource.query - transformedResult: " + JSON.stringify(transformedResult));
-            return transformedResult;
+            return {data: seriesList};
           });
         }
         catch (err) {
