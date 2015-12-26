@@ -83,7 +83,7 @@ define([
                 for (var l = 0; l < values.length; l++) {
                   var value = values[l];
                   var timestamp = parseFloat(value[0]);
-                  var metricValue = value[1];
+                  var metricValue = parseFloat(value[1]);
                   datapoints.push([metricValue, timestamp]);
                 }
 
