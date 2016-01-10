@@ -1,6 +1,7 @@
 ///<reference path="headers/common.d.ts" />
 
 import 'bootstrap';
+import 'codemirror';
 import 'lodash-src';
 import 'angular-strap';
 import 'angular-route';
@@ -8,6 +9,7 @@ import 'angular-sanitize';
 import 'angular-dragdrop';
 import 'angular-bindonce';
 import 'angular-ui';
+import 'angular-ui-codemirror';
 import 'app/core/core';
 
 import $ from 'jquery';
@@ -58,6 +60,7 @@ export class GrafanaApp {
       'pasvaz.bindonce',
       'ui.bootstrap.tabs',
       'ui.bootstrap.tpls',
+      'ui.codemirror'
     ];
 
     var module_types = ['controllers', 'directives', 'factories', 'services', 'filters', 'routes'];

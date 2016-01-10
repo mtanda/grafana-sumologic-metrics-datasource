@@ -1,0 +1,17 @@
+EQ=1
+QUANTIZE=2
+TO=3
+USING=4
+TIMEQUANTIFIER=5
+FUNCTION_NAME_NO_ARGS=6
+PIPE=7
+BY=8
+ID=9
+INT=10
+WS=11
+'='=1
+'quantize'=2
+'to'=3
+'using'=4
+'|'=7
+'by'=8

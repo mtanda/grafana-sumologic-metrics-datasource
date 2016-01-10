@@ -1,0 +1,32 @@
+span.cm-black {
+  color: #000000 !important;
+}
+
+span.cm-operator {
+  color: #0086b3;
+  font-weight: bold;
+}
+
+span.cm-metric_name {
+  color: #009;
+  font-weight: bold;
+}
+
+span.cm-dimension_key {
+  color: #090;
+}
+
+span.cm-dimension_value {
+  color: #900;
+  font-weight: bold;
+}
+
+span.cm-timerange {
+  color: #900;
+  font-weight: bold;
+}
+
+span.cm-function_name {
+  color: #8600b3;
+  font-weight: bold;
+}

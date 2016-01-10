@@ -114,6 +114,21 @@ define([
           });
       };
 
+      SumoMetricsDatasource.prototype.getMetricNames = function () {
+        return this._sumo({
+            method: 'POST',
+            url: '/api/v1/metrics/names/suggest/name',
+            data: {
+              query: "metric"
+            }
+          })
+          .then(function (results) {
+            console.log("SumoMetricsDatasource.getMetricNames - result: " + JSON.stringify(results));
+            return {status: "success", message: "Data source is working", title: "Success"};
+          });
+      };
+
+
       SumoMetricsDatasource.prototype._sumo = function (options) {
         if (this.basicAuth || this.withCredentials) {
           options.withCredentials = true;
