@@ -114,20 +114,50 @@ define([
           });
       };
 
-      SumoMetricsDatasource.prototype.getMetricNames = function () {
+      SumoMetricsDatasource.prototype.getDimensionKeys = function (query, success) {
         return this._sumo({
             method: 'POST',
-            url: '/api/v1/metrics/names/suggest/name',
+            url: '/api/v1/metrics/dimensions/suggest/key',
             data: {
-              query: "metric"
+              query: query,
+              dimensions: []
             }
           })
           .then(function (results) {
-            console.log("SumoMetricsDatasource.getMetricNames - result: " + JSON.stringify(results));
-            return {status: "success", message: "Data source is working", title: "Success"};
+            //console.log("SumoMetricsDatasource.getDimensionsKeys - result: " + JSON.stringify(results));
+            success(results);
           });
       };
 
+      SumoMetricsDatasource.prototype.getDimensionValues = function (query, dimensionKey, success) {
+        return this._sumo({
+            method: 'POST',
+            url: '/api/v1/metrics/dimensions/suggest/value',
+            data: {
+              query: query,
+              key: dimensionKey,
+              dimensions: []
+            }
+          })
+          .then(function (results) {
+            //console.log("SumoMetricsDatasource.getDimensionsKeys - result: " + JSON.stringify(results));
+            success(results);
+          });
+      };
+
+      //SumoMetricsDatasource.prototype.getMetricNames = function () {
+      //  return this._sumo({
+      //      method: 'POST',
+      //      url: '/api/v1/metrics/names/suggest/name',
+      //      data: {
+      //        query: "metric"
+      //      }
+      //    })
+      //    .then(function (results) {
+      //      console.log("SumoMetricsDatasource.getMetricNames - result: " + JSON.stringify(results));
+      //      return {status: "success", message: "Data source is working", title: "Success"};
+      //    });
+      //};
 
       SumoMetricsDatasource.prototype._sumo = function (options) {
         if (this.basicAuth || this.withCredentials) {

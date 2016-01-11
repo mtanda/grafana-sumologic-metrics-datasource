@@ -2,7 +2,8 @@ define([
     './antlr4/index.js',
     './MetricsQueryRowLexer.js',
     './MetricsQueryRowParser.js',
-    './MetricsQueryRowListener.js'
+    './MetricsQueryRowListener.js',
+    './codemirror-show-hint.js'
   ],
   function (antlr4, metricsRowQueryLexer, metricsRowQueryParser, metricsQueryRowListener) {
     'use strict';
@@ -12,10 +13,33 @@ define([
     // ---------------------------------------------------------------------------------------------
 
     var globalListener = null;
+    var globalDatasource = null;
 
     // ---------------------------------------------------------------------------------------------
     // Helpers
     // ---------------------------------------------------------------------------------------------
+
+    function getDimensionKeys(query, success) {
+      //console.log(globalDatasource);
+      //ajax(host + "/api/v1/metrics/dimensions/suggest/key",
+      //  s({"query": query, "dimensions": []}),
+      //  success)
+      globalDatasource.getDimensionKeys(query, success);
+    }
+
+    function getDimensionValues(query, dimensionKey, success) {
+      //console.log(globalDatasource);
+      //ajax(host + "/api/v1/metrics/dimensions/suggest/value",
+      //  s({query: query, key: dimensionKey, "dimensions": []}),
+      //  success)
+      globalDatasource.getDimensionValues(query, dimensionKey, success);
+    }
+
+    function getMetricNames(query, success) {
+      //console.log(globalDatasource);
+      //getDimensionValues(query, "metric", success);
+      globalDatasource.getDimensionValues(query, "metric", success);
+    }
 
     function s(s) {
       return JSON.stringify(s);
@@ -195,6 +219,156 @@ define([
       this.addParentSpan(ctx);
     };
 
+    // ---------------------------------------------------------------------------------------------
+    // Hints for autocomplete
+    // ---------------------------------------------------------------------------------------------
+
+    function createAutocompleteResults(from, to, suggestions) {
+
+      // Club everything together into a flat list.
+      var list = [];
+      var i;
+      for (i = 0; i < suggestions.dimensionKeys.length; i++) {
+        var displayName = suggestions.dimensionKeys[i].display;
+        list.push({displayText: "Key: " + displayName, text: displayName});
+      }
+      for (i = 0; i < suggestions.dimensionValues.length; i++) {
+        var displayName = suggestions.dimensionValues[i].display;
+        list.push({displayText: "Value: " + displayName, text: displayName});
+      }
+      for (i = 0; i < suggestions.metricNames.length; i++) {
+        var displayName = suggestions.metricNames[i].display;
+        list.push({displayText: "Metric: " + displayName, text: displayName});
+      }
+      list.sort(function (a, b) {
+        if (a.displayText < b.displayText) {
+          return -1;
+        } else if (a.displayText > b.displayText) {
+          return 1;
+        } else {
+          return 0;
+        }
+      });
+
+      // And finally, return the list.
+      return {list: list, from: from, to: to};
+    }
+
+    CodeMirror.registerHelper("hint", "sumometrics", function (cm, callback, options) {
+
+      var i = 0;
+      var cursor = cm.getCursor();
+
+      var m = metricsRowQueryParser.MetricsQueryRowParser;
+      var leafSpans = globalListener.leafSpans;
+      var closestPreviousLeafSpan = leafSpans[0] || null;
+      var lastLeafSpan;
+      var lastDimensionKey;
+      for (i = 0; i < leafSpans.length; i++) {
+        var span = leafSpans[i];
+        if (span.type === m.RULE_dimensionKey) {
+          lastDimensionKey = span.text;
+        }
+        console.log(span);
+        if (span.start <= cursor.ch && cursor.ch <= span.stop + 1) {
+          lastLeafSpan = span;
+          closestPreviousLeafSpan = leafSpans[i - 1];
+        }
+      }
+      console.log("Last leaf span: " + s(lastLeafSpan));
+      console.log("Closest previous leaf span: " + s(closestPreviousLeafSpan));
+
+      var parentSpans = globalListener.parentSpans;
+      var lastParentSpan;
+      for (i = 0; i < parentSpans.length; i++) {
+        var span = parentSpans[i];
+        console.log(span);
+        if (span.start <= cursor.ch) {
+          lastParentSpan = span;
+        }
+      }
+      console.log("Last parent span: " + s(lastParentSpan));
+
+      var input = cm.getValue();
+      var prefix = "";
+      var current = CodeMirror.Pos(cursor.line, cursor.ch);
+      var from = current;
+      var to = current;
+      if (lastLeafSpan) {
+        prefix = input.substring(lastLeafSpan.start, cursor.ch);
+        from = CodeMirror.Pos(cursor.line, lastLeafSpan.start);
+        to = CodeMirror.Pos(cursor.line, lastLeafSpan.stop + 1);
+      }
+      console.log("Prefix: " + prefix + ", for suggestions at: " + s(current) +
+        ", from: " + s(from) + ", to: " + s(to));
+
+      var suggestions = {
+        dimensionKeys: [],
+        dimensionValues: [],
+        metricNames: []
+      };
+
+      if ((lastLeafSpan && (
+        lastLeafSpan.type === m.RULE_dimensionValue)) ||
+        (!lastLeafSpan && (
+          closestPreviousLeafSpan.type === m.RULE_dimensionKey)
+        )) {
+
+        // Get the dimension values...
+        getDimensionValues(prefix, lastDimensionKey, function (data) {
+          console.log(data);
+          if (data && data.data) {
+            data = data.data;
+          }
+          if (data && data.suggestions) {
+            for (var i = 0; i < data.suggestions.length; i++) {
+              suggestions.dimensionValues.push(data.suggestions[i]);
+            }
+          }
+
+          var result = createAutocompleteResults(from, to, suggestions);
+          console.log("Suggestions: " + s(result));
+          callback(result);
+        });
+      } else if ((lastLeafSpan &&
+        (lastLeafSpan.type === m.RULE_metricName ||
+        lastLeafSpan.type === m.RULE_dimensionKey)) ||
+        (!lastLeafSpan && lastParentSpan.type === m.RULE_selectors)) {
+        console.log("Getting metric name and dimension key suggestions...");
+
+        // Get the dimension keys...
+        getDimensionKeys(prefix, function (data) {
+          console.log(data);
+          if (data && data.suggestions) {
+            for (var i = 0; i < data.suggestions.length; i++) {
+              suggestions.dimensionKeys.push(data.suggestions[i]);
+            }
+          }
+          // ...and the metric names.
+          getMetricNames(prefix, function (data) {
+            console.log(data);
+            if (data && data.suggestions) {
+              for (var i = 0; i < data.suggestions.length; i++) {
+                suggestions.metricNames.push(data.suggestions[i]);
+              }
+            }
+
+            var result = createAutocompleteResults(from, to, suggestions);
+            console.log("Suggestions: " + s(result));
+            callback(result);
+          });
+        });
+      }
+    });
+
+    CodeMirror.commands.autocomplete = function (cm) {
+      console.log(cm);
+      cm.showHint({
+        hint: CodeMirror.hint.sumometrics,
+        async: true
+      });
+    };
+
     // -------------------------------------------------------------------------------------------
     // CodeMirror mode implementation
     // -------------------------------------------------------------------------------------------
@@ -204,6 +378,10 @@ define([
       lexer: metricsRowQueryLexer,
 
       parser: metricsRowQueryParser,
+
+      setDatasource: function (datasource) {
+        globalDatasource = datasource;
+      },
 
       newLexer: function (input, errorListener) {
         var inputStream = new antlr4.InputStream(input);

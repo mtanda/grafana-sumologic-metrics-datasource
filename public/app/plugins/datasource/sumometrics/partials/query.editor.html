@@ -55,27 +55,8 @@
 	</ul>
 
 	<span style="display: block; overflow: hidden;">
-		<!--<input type="text" class="tight-form-clear-input" style="width: 100%;" ng-model="target.query" give-focus="target.textEditor" spellcheck='false' ng-model-onblur ng-change="get_data()" ng-show="target.textEditor"></input>-->
 		<div ui-codemirror="{onLoad : codemirrorLoaded}" type="text" class="tight-form-clear-input" style="width: 100%; height: 28px; font-size: 14px; padding-top: 4px;" ng-model="target.query" give-focus="target.textEditor" spellcheck='false' ng-model-onblur ng-change="get_data()" ng-show="target.textEditor"></div>
 	</span>
 
-	<ul class="tight-form-list" role="menu" ng-hide="target.textEditor">
-    <li class="tight-form-item query-keyword" style="width: 75px">
-      Metric
-    </li>
-    <li role="menuitem">
-      <metric-segment segment="metricSegment" get-options="getMetricNames()" on-change="metricChanged()"></metric-segment>
-    </li>
-
-		<!--<li ng-repeat="segment in segments" role="menuitem">-->
-			<!--<metric-segment segment="segment" get-options="getAltSegments($index)" on-change="segmentValueChanged(segment, $index)"></metric-segment>-->
-		<!--</li>-->
-		<!--<li ng-repeat="func in functions">-->
-			<!--<span graphite-func-editor class="tight-form-item tight-form-func">-->
-			<!--</span>-->
-		<!--</li>-->
-		<li class="dropdown" graphite-add-func>
-		</li>
-	</ul>
 	<div class="clearfix"></div>
 </div>

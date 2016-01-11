@@ -8,7 +8,7 @@ define([
 
     var module = angular.module('grafana.controllers');
 
-    module.controller('SumoMetricsQueryCtrl', function ($scope, templateSrv, $q, uiSegmentSrv) {
+    module.controller('SumoMetricsQueryCtrl', function ($scope, backendSrv, templateSrv, $q, uiSegmentSrv) {
 
       $scope.codemirrorLoaded = function (codeMirrorInstance) {
         codeMirrorInstance.setOption("autofocus", true);
@@ -17,6 +17,7 @@ define([
 
         var mode = codeMirrorInstance.getMode();
         mode.codeMirror = codeMirrorInstance;
+        mode.setDatasource($scope.datasource);
       };
 
       $scope.init = function () {
