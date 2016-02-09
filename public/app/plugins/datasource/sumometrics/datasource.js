@@ -47,16 +47,26 @@ define([
               "endTime": options.range.to.valueOf()
             }
           }).then(function (results) {
-            console.log("SumoMetricsDatasource.query - success.");
+            console.log("SumoMetricsDatasource.query - got response.");
+            console.log("SumoMetricsDatasource.query: " + JSON.stringify(results));
 
             // Bail out early if we haven't gotten any results.
             if (!results.data || !results.data.response) {
-              console.log("SumoMetricsDatasource.query - no results.");
-              return $q.when([]);
+              console.log("SumoMetricsDatasource.query - ERROR: no results.");
+              return $q.when([]); // TODO: How to report errors?
+            }
+
+            // Get the responses.
+            var responses = results.data.response;
+
+            // Check if we got an error.
+            console.log("SumoMetricsDatasource.query -  messageType: " + responses[0].messageType);
+            if (responses[0].messageType) {
+              console.log("SumoMetricsDatasource.query -  ERROR: " + responses[0].message);
+              return $q.when([]); // TODO: How to report errors?
             }
 
             // Otherwise, translate the results in the format Grafana expects.
-            var responses = results.data.response;
             var seriesList = [];
             for (var i = 0; i < responses.length; i++) {
               var response = responses[i];
@@ -78,14 +88,18 @@ define([
                 }
 
                 // Create Grafana-suitable datapoints.
-                var values = result.datapoints.values;
+                var values = result.datapoints.value;
+                var timestamps = result.datapoints.timestamp;
+                var length = Math.min(values.length, timestamps.length);
                 var datapoints = [];
-                for (var l = 0; l < values.length; l++) {
+                for (var l = 0; l < length; l++) {
                   var value = values[l];
-                  var timestamp = parseFloat(value[0]);
-                  var metricValue = parseFloat(value[1]);
-                  datapoints.push([metricValue, timestamp]);
+                  var valueParsed = parseFloat(value);
+                  var timestamp = timestamps[l];
+                  var timestampParsed = parseFloat(timestamp);
+                  datapoints.push([valueParsed, timestampParsed]);
                 }
+                console.log("SumoMetricsDatasource.query - data points: " + JSON.stringify(datapoints));
 
                 // Add the series.
                 seriesList.push({target: target, datapoints: datapoints});
