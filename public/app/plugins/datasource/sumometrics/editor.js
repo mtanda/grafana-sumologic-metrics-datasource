@@ -414,26 +414,32 @@ define([
         console.log("--> Starting to parse...");
         console.log(input);
 
-        // Set up lexing.
-        var errorListener = new ErrorListener();
-        var lexer = this.newLexer(input, errorListener);
-        var tokens = new antlr4.CommonTokenStream(lexer);
+        try {
 
-        // Set up parsing.
-        var parser = this.newParser(tokens, errorListener);
+          // Set up lexing.
+          var errorListener = new ErrorListener();
+          var lexer = this.newLexer(input, errorListener);
+          var tokens = new antlr4.CommonTokenStream(lexer);
 
-        // Actually perform the parse.
-        var metricsQueryRow = parser.metricsQueryRow();
+          // Set up parsing.
+          var parser = this.newParser(tokens, errorListener);
 
-        // Walk the parse tree.
-        var walker = new antlr4.tree.ParseTreeWalker();
-        globalListener = new Listener(input);
-        walker.walk(globalListener, metricsQueryRow);
+          // Actually perform the parse.
+          var metricsQueryRow = parser.metricsQueryRow();
 
-        //// Update the line widget.
-        //this.updateLineWidget(errorListener);
+          // Walk the parse tree.
+          var walker = new antlr4.tree.ParseTreeWalker();
+          globalListener = new Listener(input);
+          walker.walk(globalListener, metricsQueryRow);
 
-        console.log("--> Done parsing");
+          //// Update the line widget.
+          //this.updateLineWidget(errorListener);
+
+          console.log("--> Done parsing");
+
+        } catch (err) {
+          console.log("ERROR parsing: " + JSON.stringify(err));
+        }
       },
 
       token: function (stream, state) {
