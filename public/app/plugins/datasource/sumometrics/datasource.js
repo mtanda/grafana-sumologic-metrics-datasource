@@ -58,6 +58,12 @@ define([
 
             // Get the responses.
             var responses = results.data.response;
+            console.log("SumoMetricsDatasource.query - ERROR: empty response array.");
+
+            // Is there anything in the responses array?
+            if (responses.length < 1) {
+              return $q.when([]); // TODO: How to report errors?
+            }
 
             // Check if we got an error.
             console.log("SumoMetricsDatasource.query -  messageType: " + responses[0].messageType);
