@@ -430,8 +430,8 @@ define([
         globalListener = new Listener(input);
         walker.walk(globalListener, metricsQueryRow);
 
-        // Update the line widget.
-        this.updateLineWidget(errorListener);
+        //// Update the line widget.
+        //this.updateLineWidget(errorListener);
 
         console.log("--> Done parsing");
       },
