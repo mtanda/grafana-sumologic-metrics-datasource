@@ -68,7 +68,7 @@ define([
               console.log("SumoMetricsDatasource.query - ERROR: empty response array");
               console.log(options);
               console.log(results);
-              return $q.reject(new Error("Empty response array"));
+              return $q.when([]);
             }
 
             // Check if we got an error.
