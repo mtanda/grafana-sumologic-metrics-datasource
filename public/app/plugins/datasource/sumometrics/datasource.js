@@ -19,8 +19,6 @@ define([
       }
 
       SumoMetricsDatasource.prototype.query = function (options) {
-        //console.log(new Error());
-
         try {
           //console.log("SumoMetricsDatasource.query - query");
           //console.log(options);
@@ -59,7 +57,7 @@ define([
               console.log("SumoMetricsDatasource.query - ERROR: no results");
               console.log(options);
               console.log(results);
-              return $q.when([]); // TODO: How to report errors?
+              return $q.reject(new Error("No results")); // TODO: How to report errors?
             }
 
             // Get the responses.
@@ -70,7 +68,7 @@ define([
               console.log("SumoMetricsDatasource.query - ERROR: empty response array");
               console.log(options);
               console.log(results);
-              return $q.when([]); // TODO: How to report errors?
+              return $q.reject(new Error("Empty response array"));
             }
 
             // Check if we got an error.
@@ -78,7 +76,7 @@ define([
               console.log("SumoMetricsDatasource.query -  ERROR: " + responses[0].message);
               console.log(options);
               console.log(results);
-              return $q.when([]); // TODO: How to report errors?
+              return $q.reject(new Error(responses[0].message));
             }
 
             // Otherwise, translate the results in the format Grafana expects.
@@ -124,7 +122,7 @@ define([
           });
         }
         catch (err) {
-          console.log("SumoMetricsDatasource.query - error: " + JSON.stringify(err));
+          console.log("SumoMetricsDatasource.query - ERROR THROWN: " + JSON.stringify(err));
           return $q.reject(err);
         }
       };
