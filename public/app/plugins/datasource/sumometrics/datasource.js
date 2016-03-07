@@ -19,8 +19,11 @@ define([
       }
 
       SumoMetricsDatasource.prototype.query = function (options) {
+        //console.log(new Error());
+
         try {
-          console.log("SumoMetricsDatasource.query - " + JSON.stringify(options));
+          //console.log("SumoMetricsDatasource.query - query");
+          //console.log(options);
 
           // Create the query list.
           var queryList = [];
@@ -33,7 +36,7 @@ define([
 
           // Nothing to query, then bail.
           if (queryList.length < 1) {
-            console.log("SumoMetricsDatasource.query - nothing to query.");
+            console.log("SumoMetricsDatasource.query - nothing to query");
             return $q.when([]);
           }
 
@@ -47,28 +50,34 @@ define([
               "endTime": options.range.to.valueOf()
             }
           }).then(function (results) {
-            console.log("SumoMetricsDatasource.query - got response.");
-            console.log("SumoMetricsDatasource.query: " + JSON.stringify(results));
+            //console.log("SumoMetricsDatasource.query - got response");
+            //console.log(options);
+            //console.log(results);
 
             // Bail out early if we haven't gotten any results.
             if (!results.data || !results.data.response) {
-              console.log("SumoMetricsDatasource.query - ERROR: no results.");
+              console.log("SumoMetricsDatasource.query - ERROR: no results");
+              console.log(options);
+              console.log(results);
               return $q.when([]); // TODO: How to report errors?
             }
 
             // Get the responses.
             var responses = results.data.response;
-            console.log("SumoMetricsDatasource.query - ERROR: empty response array.");
 
             // Is there anything in the responses array?
             if (responses.length < 1) {
+              console.log("SumoMetricsDatasource.query - ERROR: empty response array");
+              console.log(options);
+              console.log(results);
               return $q.when([]); // TODO: How to report errors?
             }
 
             // Check if we got an error.
-            console.log("SumoMetricsDatasource.query -  messageType: " + responses[0].messageType);
             if (responses[0].messageType) {
               console.log("SumoMetricsDatasource.query -  ERROR: " + responses[0].message);
+              console.log(options);
+              console.log(results);
               return $q.when([]); // TODO: How to report errors?
             }
 
@@ -77,10 +86,10 @@ define([
             for (var i = 0; i < responses.length; i++) {
               var response = responses[i];
               var rowId = response.rowId;
-              console.log("SumoMetricsDatasource.query - rowId: " + rowId);
+              //console.log("SumoMetricsDatasource.query - rowId: " + rowId);
               for (var j = 0; j < response.results.length; j++) {
                 var result = response.results[j];
-                console.log("SumoMetricsDatasource.query - metric: " + JSON.stringify(result.metric));
+                //console.log("SumoMetricsDatasource.query - metric: " + JSON.stringify(result.metric));
 
                 // Synthesize the "target" - the "metric name" basically.
                 var target = "";
@@ -105,7 +114,7 @@ define([
                   var timestampParsed = parseFloat(timestamp);
                   datapoints.push([valueParsed, timestampParsed]);
                 }
-                console.log("SumoMetricsDatasource.query - data points: " + JSON.stringify(datapoints));
+                //console.log("SumoMetricsDatasource.query - data points: " + JSON.stringify(datapoints));
 
                 // Add the series.
                 seriesList.push({target: target, datapoints: datapoints});
