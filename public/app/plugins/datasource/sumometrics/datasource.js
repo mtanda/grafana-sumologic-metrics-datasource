@@ -83,11 +83,18 @@ define([
             var seriesList = [];
             for (var i = 0; i < responses.length; i++) {
               var response = responses[i];
-              var rowId = response.rowId;
-              //console.log("SumoMetricsDatasource.query - rowId: " + rowId);
+              //if (response.results) {
+              //  console.log("SumoMetricsDatasource.query -  " +
+              //    "WARN: results missing for response[" + i + "]"); // TODO: Now what?
+              //}
+              if (response.messageType) {
+                console.log("SumoMetricsDatasource.query -  " +
+                  "WARN: message: " + response.message + ", type: " + response.messageType +
+                " for response[" + i + "]");
+                continue; // TODO: How to display warning?
+              }
               for (var j = 0; j < response.results.length; j++) {
                 var result = response.results[j];
-                //console.log("SumoMetricsDatasource.query - metric: " + JSON.stringify(result.metric));
 
                 // Synthesize the "target" - the "metric name" basically.
                 var target = "";
